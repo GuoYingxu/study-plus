@@ -2,11 +2,6 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
 };
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 // 定义菜单
 
@@ -19,7 +14,7 @@ pub fn run() {
             let quit_i = MenuItem::with_id(app, "quit", "退出程序", true, None::<&str>)?;
             let update_i = MenuItem::with_id(app, "update", "检查更新", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&quit_i, &update_i])?;
-            let tray = TrayIconBuilder::new()
+            TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .show_menu_on_left_click(true)
