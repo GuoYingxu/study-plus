@@ -22,6 +22,8 @@
     }
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
+    "publisher": "EduPlus Inc.",
     "active": true,
     "targets": "all",
     "icon": [
@@ -31,5 +33,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater":{
+      "pubkey":"dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc0MkU0QzVGQUZGRUEwQgpSV1FMNnYvNnhlUkNCMFROaWZmNk5lNGVCZGYvM2VJWlpIcEZxWmhYaS94R3NWdjlQMytOdHU2TAo=",
+      "endpoint":"https://api.github.com/repos/edu-plus/study-plus/releases/latest",
+      "windows":{
+        "installMode":"passive"
+      }
+    }
   }
+  
+
 }
