@@ -1,33 +1,148 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { open } from '@tauri-apps/api/dialog';
+import { downloadFile } from '@tauri-apps/api/http';
+import { extract } from '@tauri-apps/api/archive';
+import { createDir } from '@tauri-apps/api/fs';
+
+const selectedPath = ref('');
+const isDownloading = ref(false);
+const downloadProgress = ref(0);
+
+async function selectDirectory() {
+  const selected = await open({
+    directory: true,
+    multiple: false,
+  });
+  if (selected) {
+    selectedPath.value = selected as string;
+  }
+}
+
+async function downloadAndExtract() {
+  if (!selectedPath.value) return;
+
+  try {
+    isDownloading.value = true;
+    downloadProgress.value = 0;
+
+    // 创建目录
+    await createDir(selectedPath.value, { recursive: true });
+
+    // 下载文件
+    const filePath = `${selectedPath.value}/jupyterlab.zip`;
+    await downloadFile(
+      'https://your-jupyterlab-download-url.com/jupyterlab.zip',
+      filePath,
+      (progress) => {
+        downloadProgress.value = Math.round(progress.progress * 100);
+      }
+    );
+
+    // 解压文件
+    await extract(filePath, selectedPath.value);
+
+    alert('JupyterLab环境已成功安装！');
+  } catch (error) {
+    console.error('下载或解压过程出错：', error);
+    alert('安装过程出错，请重试');
+  } finally {
+    isDownloading.value = false;
+    downloadProgress.value = 0;
+  }
+}
 </script>
 
 <template>
   <main class="container">
-    <h1>Welcome to Study +</h1>
+    <h1>JupyterLab环境配置</h1>
 
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
+    <div class="setup-container">
+      <div class="directory-selector">
+        <button @click="selectDirectory" :disabled="isDownloading">
+          选择安装目录
+        </button>
+        <div class="selected-path" v-if="selectedPath">
+          已选择: {{ selectedPath }}
+        </div>
+      </div>
+
+      <div class="download-section" v-if="selectedPath">
+        <button @click="downloadAndExtract" :disabled="isDownloading" class="download-button">
+          {{ isDownloading ? '正在安装...' : '下载并安装JupyterLab' }}
+        </button>
+
+        <div class="progress-bar" v-if="isDownloading">
+          <div class="progress" :style="{ width: `${downloadProgress}%` }"></div>
+          <span class="progress-text">{{ downloadProgress }}%</span>
+        </div>
+      </div>
     </div>
-
-    <div>edupluc inc.</div>
   </main>
 </template>
 
 <style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+.setup-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: center;
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+.directory-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.selected-path {
+  font-size: 0.9em;
+  color: #666;
+  word-break: break-all;
+  max-width: 400px;
+}
+
+.download-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.download-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.download-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.progress-bar {
+  width: 300px;
+  height: 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-size: 12px;
 }
 </style>
 <style>
