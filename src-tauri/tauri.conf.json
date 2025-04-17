@@ -37,11 +37,14 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc0MkU0QzVGQUZGRUEwQgpSV1FMNnYvNnhlUkNCMFROaWZmNk5lNGVCZGYvM2VJWlpIcEZxWmhYaS94R3NWdjlQMytOdHU2TAo=",
-      "endpoint": "https://api.github.com/repos/edu-plus/study-plus/releases/latest",
+      "endpoint": "https://api.github.com/repos/guoyingxu/study-plus/releases/latest",
       "windows": {
         "installMode": "passive"
       },
       "privateKeyPassword": "studyplus"
+    },
+    "process": {
+      "all": true
     }
   }
 }
