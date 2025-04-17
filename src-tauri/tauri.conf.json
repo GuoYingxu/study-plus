@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "study-plus",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "identifier": "com.eduplus.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -37,13 +37,17 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc0MkU0QzVGQUZGRUEwQgpSV1FMNnYvNnhlUkNCMFROaWZmNk5lNGVCZGYvM2VJWlpIcEZxWmhYaS94R3NWdjlQMytOdHU2TAo=",
+      "dialog": {
+        "updateTitle": "发现新版本",
+        "updateMessage": "发现新版本 {{version}}",
+        "noUpdateMessage": "当前已经是最新版本"
+      },
       "endpoints": [
-        "https://api.github.com/repos/guoyingxu/study-plus/releases/latest"
+        "https://github.com/guoyingxu/study-plus/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"
-      },
-      "privateKeyPassword": "studyplus"
+      }
     },
     "process": {
       "all": true
