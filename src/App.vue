@@ -17,6 +17,7 @@
       </a>
     </div>
 
+    <div>edupluc inc.</div>
   </main>
 </template>
 
