@@ -3,11 +3,17 @@
 import { app } from '@tauri-apps/api';
 import { onMounted, ref } from 'vue';
 const appVersion = ref('');
+const message = ref('');
 onMounted(async () => {
   // 获取版本号
   const version = await app.getVersion();
   appVersion.value = version;
 });
+// 点击事件
+const onClick = () => {
+  // 打开一个新窗口
+  message.value = 'Hello ! Welcome to Study +';
+};
 </script>
 
 <template>
@@ -28,6 +34,13 @@ onMounted(async () => {
 
     <div>edupluc inc.</div>
     <div class="version">Version: {{ appVersion }}</div>
+
+    <div class="row">
+      <button @click="onClick">Click me</button>
+    </div>
+    <div class="row">
+      <div class="message">{{ message }}</div>
+    </div>
   </main>
 </template>
 
