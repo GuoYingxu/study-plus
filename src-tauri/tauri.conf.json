@@ -40,7 +40,8 @@
       "endpoint": "https://api.github.com/repos/edu-plus/study-plus/releases/latest",
       "windows": {
         "installMode": "passive"
-      }
+      },
+      "privateKeyPassword": "studyplus"
     }
   }
 }
