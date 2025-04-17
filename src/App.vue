@@ -1,4 +1,13 @@
 <script setup lang="ts">
+// 获取版本号
+import { app } from '@tauri-apps/api';
+import { onMounted, ref } from 'vue';
+const appVersion = ref('');
+onMounted(async () => {
+  // 获取版本号
+  const version = await app.getVersion();
+  appVersion.value = version;
+});
 </script>
 
 <template>
@@ -18,6 +27,7 @@
     </div>
 
     <div>edupluc inc.</div>
+    <div class="version">Version: {{ appVersion }}</div>
   </main>
 </template>
 
@@ -28,6 +38,12 @@
 
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #249b73);
+}
+
+.version {
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #646cff;
 }
 </style>
 <style>
