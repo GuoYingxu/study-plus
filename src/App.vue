@@ -1,48 +1,95 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { open } from '@tauri-apps/api/dialog';
-import { downloadFile } from '@tauri-apps/api/http';
-import { extract } from '@tauri-apps/api/archive';
-import { createDir } from '@tauri-apps/api/fs';
+import { onMounted, ref } from 'vue';
+import { download } from '@tauri-apps/plugin-upload';
+import { BaseDirectory, exists, mkdir, remove } from '@tauri-apps/plugin-fs';
+import { appLocalDataDir, desktopDir, join } from '@tauri-apps/api/path';
+import { getPythonEnvDir, setPythonEnvDir } from './config/userConfig';
+import { open } from "@tauri-apps/plugin-dialog";
+import { invoke } from '@tauri-apps/api/core';
+import { Command } from '@tauri-apps/plugin-shell';
 
-const selectedPath = ref('');
+const pythonEnvPath = ref();
 const isDownloading = ref(false);
 const downloadProgress = ref(0);
+const JupyterEnvZipUrl = ref('https://uplus-sql.oss-cn-hangzhou.aliyuncs.com/jupyter_server.zip');
+const expermentId = "firstJupyterLabProject";
+const canExecute = ref(false);
+onMounted(async () => {
+  const envPath = await getPythonEnvDir();
+  if (envPath) {
+    pythonEnvPath.value = envPath;
+  } else {
+    await setPythonEnvDir(await appLocalDataDir());
+    pythonEnvPath.value = await appLocalDataDir();
+  }
+});
+
+async function open_jupyterlab() {
+  if (!pythonEnvPath.value) return;
+  const folderPath = await join(pythonEnvPath.value, expermentId);
+  console.log('准备打开的文件夹路径...', folderPath);
+  // 这里可以使用 Tauri 的命令行工具来打开 JupyterLab
+  const exePath = await join(folderPath, 'jupyter_server', 'jupyter_server.exe');
+  const jupyterfile = "D:\\introduction_to_ml_with_python-main"
+  Command.create(exePath, [jupyterfile])
+    .spawn()
+    .then(() => {
+      console.log('JupyterLab 已启动');
+    })
+    .catch((error) => {
+      console.error('启动 JupyterLab 失败:', error);
+      alert('启动 JupyterLab 失败，请检查安装目录和环境变量设置。');
+    });
+  // await invoke('open_jupyterlab', { path: folderPath });
+}
 
 async function selectDirectory() {
   const selected = await open({
     directory: true,
     multiple: false,
+    defaultPath: await desktopDir(),
   });
   if (selected) {
-    selectedPath.value = selected as string;
+    pythonEnvPath.value = selected as string;
+
+    console.log('选择的安装目录:', pythonEnvPath.value);
   }
 }
 
 async function downloadAndExtract() {
-  if (!selectedPath.value) return;
+  console.log('开始下载和解压...', pythonEnvPath.value);
+  if (!pythonEnvPath.value) return;
+  const folderPath = await join(pythonEnvPath.value, expermentId);
+  console.log('准备创建的文件夹路径...', folderPath);
 
   try {
     isDownloading.value = true;
     downloadProgress.value = 0;
-
+    if (await exists(folderPath)) {
+      console.log('文件夹已存在，准备删除旧文件夹...');
+      await remove(folderPath, {
+        recursive: true
+      });
+    }
+    console.log('准备创建新文件夹...');
     // 创建目录
-    await createDir(selectedPath.value, { recursive: true });
-
+    await mkdir(folderPath, { recursive: true })
+    console.log('创建文件夹成功，准备下载文件...');
     // 下载文件
-    const filePath = `${selectedPath.value}/jupyterlab.zip`;
-    await downloadFile(
-      'https://your-jupyterlab-download-url.com/jupyterlab.zip',
-      filePath,
-      (progress) => {
-        downloadProgress.value = Math.round(progress.progress * 100);
-      }
-    );
+    const filePath = await join(folderPath, 'jupyterlab.zip');
+    await download(JupyterEnvZipUrl.value, filePath, (progress) => {
+      downloadProgress.value = Math.round(progress.progressTotal / progress.total * 100);
+      // console.log('下载进度:', progress.progress, progress.progressTotal, progress.total, progress.transferSpeed);
+    });
 
     // 解压文件
-    await extract(filePath, selectedPath.value);
+    const extractPath = folderPath;// await join(folderPath, 'jupyterlab');
+    await invoke('extract_zip', { filePath, extractTo: extractPath });
 
+    // 清理临时文件
+    await remove(filePath, { recursive: true });
     alert('JupyterLab环境已成功安装！');
+    canExecute.value = true;
   } catch (error) {
     console.error('下载或解压过程出错：', error);
     alert('安装过程出错，请重试');
@@ -52,22 +99,20 @@ async function downloadAndExtract() {
   }
 }
 </script>
-
 <template>
   <main class="container">
     <h1>JupyterLab环境配置</h1>
-
     <div class="setup-container">
       <div class="directory-selector">
         <button @click="selectDirectory" :disabled="isDownloading">
           选择安装目录
         </button>
-        <div class="selected-path" v-if="selectedPath">
-          已选择: {{ selectedPath }}
+        <div class="selected-path" v-if="pythonEnvPath">
+          已选择: {{ pythonEnvPath }}
         </div>
       </div>
 
-      <div class="download-section" v-if="selectedPath">
+      <div class="download-section" v-if="pythonEnvPath">
         <button @click="downloadAndExtract" :disabled="isDownloading" class="download-button">
           {{ isDownloading ? '正在安装...' : '下载并安装JupyterLab' }}
         </button>
@@ -76,6 +121,11 @@ async function downloadAndExtract() {
           <div class="progress" :style="{ width: `${downloadProgress}%` }"></div>
           <span class="progress-text">{{ downloadProgress }}%</span>
         </div>
+      </div>
+      <div class="execute-section">
+        <button @click="open_jupyterlab" class="download-button">
+          打开JupyterLab
+        </button>
       </div>
     </div>
   </main>

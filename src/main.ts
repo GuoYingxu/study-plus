@@ -1,8 +1,10 @@
-import { createApp } from "vue";
+import {createApp} from "vue";
 import App from "./App.vue";
 
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
+import {check} from "@tauri-apps/plugin-updater";
+import {relaunch} from "@tauri-apps/plugin-process";
+
+
 async function checkVersion() {
   try {
     const update = await check();
@@ -18,3 +20,4 @@ async function checkVersion() {
   }
 }
 checkVersion();
+
