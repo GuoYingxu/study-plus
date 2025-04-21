@@ -144,6 +144,12 @@ async function downloadAndExtract() {
   color: #000;
   font-size: 12px;
 }
+
+.version {
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #646cff;
+}
 </style>
 <style>
 :root {
